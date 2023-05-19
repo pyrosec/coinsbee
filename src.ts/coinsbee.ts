@@ -352,6 +352,7 @@ export class CoinsbeeClient {
 	origin: 'https://www.coinsbee.com'
       }
     });
+    return response;
     const htmlContent = await response.text();
     return mixpayPageToObject(htmlContent);
   }

@@ -99,6 +99,11 @@ export async function callAPI(command, data) {
   if (data.insecure) coinsbee.insecure = true;
   delete data.insecure;
   if (!coinsbee[camelCommand]) throw Error("command not foud: " + command);
+  if (json) coinsbee.logger = new Proxy({}, {
+    get(v) {
+      return () => {};
+    }
+  }) as any;
   const result = await coinsbee[camelCommand](data);
   if (json) console.log(JSON.stringify(result, null, 2));
   else logger.info(result);

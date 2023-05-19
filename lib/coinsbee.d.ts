@@ -76,10 +76,7 @@ export declare class CoinsbeeClient {
         btnBuyCoinGate?: string;
         cpf?: string;
         fullname?: string;
-    }): Promise<{
-        config: any;
-        payment: any;
-    }>;
+    }): Promise<any>;
     toObject(): {
         userAgent: string;
         jar: any;
