@@ -81,7 +81,7 @@ export class CoinsbeeClient {
       'accept-encoding': 'gzip, deflate, br',
       accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7'
     }, config.headers || {});
-    this.logger.info(config.method || 'GET|' + uri);
+    this.logger.info((config.method || 'GET|') + uri);
     const response = await fetchCookie(uri, config);
     this.logger.info('status|' + response.status);
     return response;
