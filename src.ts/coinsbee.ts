@@ -47,7 +47,6 @@ const optionsToList = ($, el) => {
 };
 
 const mixpayPageToObject = (htmlContent) => {
-  console.log(htmlContent);
   const $ = cheerio.load(htmlContent);
   const payment = JSON.parse($('textarea#__payment').text());
   const script = $('script').text();
