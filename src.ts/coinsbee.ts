@@ -7,6 +7,7 @@ import cheerio from "cheerio";
 import url, { URL } from "url";
 import https from "https";
 import UserAgent from "user-agents";
+import { getLogger } from "./logger";
 
 const solver = new Solver(process.env.TWOCAPTCHA_API_KEY);
 
@@ -14,11 +15,18 @@ const CookieJarClass = (makeFetchCookie.toughCookie as any).CookieJar;
 
 type CookieJar = typeof CookieJarClass;
 
+interface ISavedAuthentication {
+  email: string;
+  password: string;
+}
+
 export class CoinsbeeClient {
+  public logger: ReturnType<typeof getLogger>;
   public jar: CookieJar;
   public proxyOptions: any;
   public insecure: boolean;
   public userAgent: string;
+  public auth: null | ISavedAuthentication;
   static async initialize(o: any) {
     return new CoinsbeeClient(o);
   }
@@ -52,13 +60,15 @@ export class CoinsbeeClient {
       });
     } else return null;
   }
-  constructor({ jar, userAgent, insecure = false }: any) {
+  constructor({ logger, jar, userAgent, auth, insecure = false }: any) {
     this.userAgent = userAgent || new UserAgent().toString();
     this.jar =
       (jar &&
         (makeFetchCookie.toughCookie as any).CookieJar.deserializeSync(jar)) ||
       new (makeFetchCookie.toughCookie as any).CookieJar();
     this.insecure = insecure;
+    this.logger = logger || getLogger();
+    this.auth = auth || null;
   }
   async _call(uri, config: any = {}) {
     const fetchCookie: any = makeFetchCookie(fetch, this.jar);
@@ -71,7 +81,10 @@ export class CoinsbeeClient {
       'accept-encoding': 'gzip, deflate, br',
       accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7'
     }, config.headers || {});
-    return await fetchCookie(uri, config);
+    this.logger.info(config.method || 'GET|' + uri);
+    const response = await fetchCookie(uri, config);
+    this.logger.info('status|' + response.status);
+    return response;
   }
   static fromObject(o: any) {
     return new CoinsbeeClient(o);
@@ -83,6 +96,7 @@ export class CoinsbeeClient {
     return {
       userAgent: this.userAgent,
       jar: this.jar.serializeSync(),
+      auth: this.auth
     };
   }
   toJSON() {
@@ -103,6 +117,38 @@ export class CoinsbeeClient {
     });
     return this.rewriteAndFollowRedirect(response);
   }
+  async login({
+    email,
+    password
+  }) {
+    this.auth = this.auth || ({} as ISavedAuthentication);
+    this.auth.email = email || this.auth.email;
+    this.auth.password = password || this.auth.password;
+    const response = await this._call("https://www.coinsbee.com/en/login", {
+      method: "GET"
+    });
+    const c = await this.solveCaptcha(await response.text());
+    const formData = new URLSearchParams();
+    formData.append("email", this.auth.email);
+    formData.append("password", this.auth.password);
+    formData.append("c", c);
+    return await this._call("https://www.coinsbee.com/en/login", {
+      method: "POST",
+      body: formData,
+      redirect: "manual",
+      headers: {
+        "content-type": "application/x-www-form-urlencoded",
+      },
+    });
+  }
+  async solveCaptcha(pageContent: string) {
+    const $ = cheerio.load(pageContent);
+    const data = $(".form-text img").attr("src");
+    this.logger.info('solving captcha');
+    const c = (await solver.imageCaptcha(data.substr(23))).data;
+    this.logger.info('captcha:' + c);
+    return c;
+  }
   async signup({
     email,
     password,
@@ -114,11 +160,9 @@ export class CoinsbeeClient {
     country,
     birthday,
   }) {
+    this.logger.info('signup|' + email);
     const response: any = await this.getSignupPage();
-    const text = await response.text();
-    const $ = cheerio.load(text);
-    const data = $(".form-text img").attr("src");
-    const c = (await solver.imageCaptcha(data.substr(23))).data;
+    const c = await this.solveCaptcha(await response.text());
     const formData = new URLSearchParams();
     formData.append("email", email);
     formData.append("password1", password);
