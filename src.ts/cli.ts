@@ -94,19 +94,37 @@ export async function callAPI(command, data) {
   const coinsbee = await loadSession();
   const camelCommand = camelCase(command);
   const json = data.j || data.json;
+  const coerce = data.c || data.coerce;
   delete data.j;
   delete data.json;
+  delete data.c;
+  delete data.coerce;
   if (data.insecure) coinsbee.insecure = true;
   delete data.insecure;
   if (!coinsbee[camelCommand]) throw Error("command not foud: " + command);
-  if (json) coinsbee.logger = new Proxy({}, {
-    get(v) {
-      return () => {};
-    }
-  }) as any;
+  if (json)
+    coinsbee.logger = new Proxy(
+      {},
+      {
+        get(v) {
+          return () => {};
+        },
+      }
+    ) as any;
   const result = await coinsbee[camelCommand](data);
-  if (json) console.log(JSON.stringify(result, null, 2));
-  else logger.info(result);
+  const coerced =
+    coerce && typeof result.json === "function"
+      ? await (async () => {
+          const text = await result.text();
+          try {
+            return JSON.parse(text);
+          } catch (e) {
+            return text;
+          }
+        })()
+      : result;
+  if (json) console.log(JSON.stringify(coerced, null, 2));
+  else logger.info(coerced);
   await saveSession(coinsbee, json);
   return result;
 }

@@ -11,6 +11,8 @@ import qs from "querystring";
 import { getLogger } from "./logger";
 import vm from "vm";
 
+const ln = (v) => ((console.log(v)), v);
+
 const headersSet = Headers.prototype.set;
 
 Headers.prototype.set = function (...args) {
@@ -263,6 +265,15 @@ export class CoinsbeeClient {
     this.logger = logger || getLogger();
     this.auth = auth || null;
   }
+  async checkout() {
+    return await this._call(url.format({
+      protocol: 'https:',
+      hostname: 'www.coinsbee.com',
+      pathname: '/en/checkout'
+    }), {
+      method: 'POST'
+    });
+  }
   async checkoutProcessing({
     currency = "ETH",
     nw = "2",
@@ -317,6 +328,76 @@ export class CoinsbeeClient {
   static fromJSON(s: string) {
     return this.fromObject(JSON.parse(s));
   }
+  async userOrders({
+    from,
+    length = "100"
+  }) {
+    const query: any = {};
+    Array(4).fill(0).forEach((v, i) => {
+      query['columns[' + i + '][data]'] = String(i);
+      query['columns[' + i + '][name]'] = "";
+      query['columns[' + i + '][searchable]'] = "true";
+      query['columns[' + i + '][orderable]'] = "true";
+      query['columns[' + i + '][search][value]'] = "";
+      query['columns[' + i + '][search][regex]'] = "false";
+    });
+    query['order[0][column]'] = "0";
+    query['order[0][dir]'] = "desc";
+    query.start = "0";
+    query.length = length; 
+    query["search[value]"] = "";
+    query["search[regex]"] = "false";
+    query._ = String(!from ? (Date.now() - 1000*60*60*24*30) : !isNaN(from) ? from : +new Date(from));
+    const response = await (await this._call(url.format({
+      hostname: 'www.coinsbee.com',
+      protocol: 'https:',
+      pathname: '/en/modules/user_orders_processing.php',
+      search: '?' + qs.stringify(query)
+    }), {
+      method: "POST"
+    })).json();
+    const { data } = response;
+    delete response.data;
+    return {
+      ...response,
+      data: data.map(([ date, cost, currency, status, markup ]) => {
+        const $ = cheerio.load(markup);
+	const [ orderid, hash ] = $('a').eq(0).attr('href').split('&').slice(-2).map((v) => v.split('=').slice(1).join('='));
+	return {
+          date,
+	  cost,
+	  currency,
+	  status,
+	  orderid,
+	  hash
+	};
+      })
+    };
+  }
+  async userOrdersDetails({
+    orderid,
+    hash
+  }) {
+    const response = await this._call(url.format({
+      protocol: 'https:',
+      hostname: 'www.coinsbee.com',
+      pathname: '/en/user_orders_details&orderid=' + orderid + '&hash=' + hash
+    }), {
+      method: 'GET'
+    });
+    const $ = cheerio.load(await response.text());
+    const cells = [];
+    $('tbody td').each(function () {
+      cells.push($(this).text().trim());
+    });
+    const [ product, code, pin, urlCell ] = cells;
+    return {
+      product,
+      pin,
+      code,
+      url: urlCell
+    };
+  }
   async checkoutProceed({
     discountcode = "",
     terms = "",
@@ -341,7 +422,7 @@ export class CoinsbeeClient {
     }), {
       method: 'POST',
       body: formData,
-      redirect: 'follow',
+      redirect: 'manual',
       headers: {
         'upgrade-insecure-requests': 1,
         'content-type': 'application/x-www-form-urlencoded',
@@ -352,7 +433,7 @@ export class CoinsbeeClient {
 	origin: 'https://www.coinsbee.com'
       }
     });
-    return response;
+    return [ ...response.headers ];
     const htmlContent = await response.text();
     return mixpayPageToObject(htmlContent);
   }

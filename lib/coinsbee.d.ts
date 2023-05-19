@@ -59,6 +59,7 @@ export declare class CoinsbeeClient {
         search?: string;
     }): Promise<any[]>;
     constructor({ logger, jar, userAgent, auth, insecure }: any);
+    checkout(): Promise<any>;
     checkoutProcessing({ currency, nw, pm, discountcode, }: {
         currency?: string;
         nw?: string;
@@ -68,6 +69,19 @@ export declare class CoinsbeeClient {
     _call(uri: any, config?: any): Promise<any>;
     static fromObject(o: any): CoinsbeeClient;
     static fromJSON(s: string): CoinsbeeClient;
+    userOrders({ from, length }: {
+        from: any;
+        length?: string;
+    }): Promise<any>;
+    userOrdersDetails({ orderid, hash }: {
+        orderid: any;
+        hash: any;
+    }): Promise<{
+        product: any;
+        pin: any;
+        code: any;
+        url: any;
+    }>;
     checkoutProceed({ discountcode, terms, coin, network, btnBuyCoinGate, cpf, fullname }: {
         discountcode?: string;
         terms?: string;
@@ -76,7 +90,10 @@ export declare class CoinsbeeClient {
         btnBuyCoinGate?: string;
         cpf?: string;
         fullname?: string;
-    }): Promise<any>;
+    }): Promise<any[] | {
+        config: any;
+        payment: any;
+    }>;
     toObject(): {
         userAgent: string;
         jar: any;
