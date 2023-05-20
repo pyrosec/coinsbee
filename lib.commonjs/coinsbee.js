@@ -4,7 +4,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CoinsbeeClient = void 0;
-const fetch_cookie_1 = __importDefault(require("fetch-cookie"));
 const socks_proxy_agent_1 = require("socks-proxy-agent");
 const https_proxy_agent_1 = __importDefault(require("https-proxy-agent"));
 const _2captcha_1 = require("2captcha");
@@ -15,7 +14,9 @@ const user_agents_1 = __importDefault(require("user-agents"));
 const querystring_1 = __importDefault(require("querystring"));
 const logger_js_1 = require("./logger.js");
 const vm_1 = __importDefault(require("vm"));
-const node_fetch_1 = __importDefault(require("node-fetch"));
+const fetch_h2_1 = require("fetch-h2");
+const deserializeSync = (s) => Object.assign(new fetch_h2_1.CookieJar(), { _jar: new fetch_h2_1.CookieJar()._jar.constructor.deserializeSync(s) });
+const serializeSync = (jar) => jar._jar.serializeSync();
 const ln = (v) => ((console.log(v)), v);
 /*
 const headersSet = Headers.prototype.set;
@@ -33,7 +34,6 @@ Headers.prototype.has = function (...args) {
 };
 */
 const solver = process.env.TWOCAPTCHA_API_KEY ? new _2captcha_1.Solver(process.env.TWOCAPTCHA_API_KEY) : null;
-const CookieJarClass = fetch_cookie_1.default.toughCookie.CookieJar;
 const serializeProducts = (list) => list.map((v) => v.href).join("|");
 const findDollarAmount = (ary) => ((ary.find((v) => v.match(/\$/)) || "").match(/(?:(\$[\d\.]+))/g) || [])[0] ||
     null;
@@ -128,7 +128,7 @@ class CoinsbeeClient {
     }
     async shoppingCart() {
         return await this._call(url_1.default.format({
-            protocol: 'https:',
+            protocol: 'http2:',
             hostname: 'www.coinsbee.com',
             pathname: '/en/shoppingcart'
         }), {
@@ -246,17 +246,14 @@ class CoinsbeeClient {
     }
     constructor({ logger, jar, userAgent, auth, insecure = false }) {
         this.userAgent = userAgent || new user_agents_1.default().toString();
-        this.jar =
-            (jar &&
-                fetch_cookie_1.default.toughCookie.CookieJar.deserializeSync(jar)) ||
-                new fetch_cookie_1.default.toughCookie.CookieJar();
+        this.jar = (jar && deserializeSync(jar)) || new fetch_h2_1.CookieJar();
         this.insecure = insecure;
         this.logger = logger || (0, logger_js_1.getLogger)();
         this.auth = auth || null;
     }
     async checkout() {
         return await this._call(url_1.default.format({
-            protocol: 'https:',
+            protocol: 'http2:',
             hostname: 'www.coinsbee.com',
             pathname: '/en/checkout'
         }), {
@@ -282,19 +279,33 @@ class CoinsbeeClient {
         return data;
     }
     async _call(uri, config = {}) {
-        const fetchCookie = (0, fetch_cookie_1.default)(node_fetch_1.default, this.jar);
-        config.agent = this._makeAgent();
-        config.redirect = config.redirect || "follow";
+        const cloned = { ...config };
+        config.redirect = config.redirect || 'follow';
+        const { fetch } = (0, fetch_h2_1.context)({ cookieJar: this.jar, userAgent: this.userAgent });
+        cloned.agent = this._makeAgent();
+        const { redirect } = cloned;
+        cloned.redirect = config.method === 'POST' && "manual" || config.redirect;
+        cloned.compress = cloned.compress == null ? true : cloned.compress;
         //    config.referer = 'client';
-        config.headers = Object.assign({
-            "user-agent": this.userAgent,
+        cloned.headers = Object.assign({
             "accept-language": "en-US,en;q=0.9",
-            "accept-encoding": "gzip, deflate, br",
             accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-        }, config.headers || {});
-        this.logger.info(((config.method && config.method + "|") || "GET|") + uri);
-        const response = await fetchCookie(uri, config);
+        }, cloned.headers || {});
+        this.logger.info(((cloned.method && cloned.method + "|") || "GET|") + uri);
+        const response = await fetch(uri, cloned);
         this.logger.info("status|" + response.status);
+        if (config.redirect === 'follow' && [301, 302].includes(response.status) && config.method === 'POST') {
+            const headers = [...response.headers];
+            const location = headers.find(([key, value]) => key.toLowerCase() === 'location')[1];
+            if (location) {
+                const parsed = url_1.default.parse(location);
+                const formatted = url_1.default.format({ ...parsed, protocol: 'http2:' });
+                return await this._call(formatted, {
+                    method: 'GET',
+                    redirect: 'follow'
+                });
+            }
+        }
         return response;
     }
     static fromObject(o) {
@@ -322,7 +333,7 @@ class CoinsbeeClient {
         query._ = String(!from ? (Date.now() - 1000 * 60 * 60 * 24 * 30) : !isNaN(from) ? from : +new Date(from));
         const response = await (await this._call(url_1.default.format({
             hostname: 'www.coinsbee.com',
-            protocol: 'https:',
+            protocol: 'http2:',
             pathname: '/en/modules/user_orders_processing.php',
             search: '?' + querystring_1.default.stringify(query)
         }), {
@@ -348,7 +359,7 @@ class CoinsbeeClient {
     }
     async userOrdersDetails({ orderid, hash }) {
         const response = await this._call(url_1.default.format({
-            protocol: 'https:',
+            protocol: 'http2:',
             hostname: 'www.coinsbee.com',
             pathname: '/en/user_orders_details&orderid=' + orderid + '&hash=' + hash
         }), {
@@ -379,19 +390,17 @@ class CoinsbeeClient {
         const response = await this._call(url_1.default.format({
             hostname: 'www.coinsbee.com',
             pathname: '/modules/checkout_proceed.php',
-            protocol: 'https:'
+            protocol: 'http2:'
         }), {
             method: 'POST',
-            body: formData,
+            body: formData.toString(),
             redirect: 'manual',
+            referrer: 'https://www.coinsbee.com/en/checkout',
             headers: {
-                'upgrade-insecure-requests': 1,
+                //  'upgrade-insecure-requests': 1,
                 'content-type': 'application/x-www-form-urlencoded',
                 accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-                referer: 'https://www.coinsbee.com/en/checkout',
-                'accept-encoding': 'gzip, deflate, br',
-                'accept-language': 'en-US,en;q=0.9',
-                origin: 'https://www.coinsbee.com'
+                'accept-language': 'en-US,en;q=0.9'
             }
         });
         return [...response.headers];
@@ -401,7 +410,7 @@ class CoinsbeeClient {
     toObject() {
         return {
             userAgent: this.userAgent,
-            jar: this.jar.serializeSync(),
+            jar: serializeSync(this.jar),
             auth: this.auth,
         };
     }
@@ -429,7 +438,7 @@ class CoinsbeeClient {
         this.auth = this.auth || {};
         this.auth.email = email || this.auth.email;
         this.auth.password = password || this.auth.password;
-        const response = await this._call("https://www.coinsbee.com/en/login", {
+        const response = await this._call("http2://www.coinsbee.com/en/login&return=", {
             method: "GET",
         });
         const c = await this.solveCaptcha(await response.text());
@@ -437,9 +446,9 @@ class CoinsbeeClient {
         formData.append("email", this.auth.email);
         formData.append("password", this.auth.password);
         formData.append("c", c);
-        return await this._call("https://www.coinsbee.com/en/login", {
+        return await this._call("http2://www.coinsbee.com/en/login&return=", {
             method: "POST",
-            body: formData,
+            body: formData.toString(),
             redirect: "follow",
             headers: {
                 "content-type": "application/x-www-form-urlencoded",
@@ -473,9 +482,9 @@ class CoinsbeeClient {
         formData.append("birthday", birthday);
         formData.append("terms", "");
         formData.append("c", c);
-        return await await this._call("https://www.coinsbee.com/en/signup", {
+        return await await this._call("http2://www.coinsbee.com/en/signup", {
             method: "POST",
-            body: formData,
+            body: formData.toString(),
             redirect: "manual",
             headers: {
                 "content-type": "application/x-www-form-urlencoded",

@@ -2,8 +2,7 @@
 import { SocksProxyAgent } from "socks-proxy-agent";
 import https from "https";
 import { getLogger } from "./logger.js";
-declare const CookieJarClass: any;
-type CookieJar = typeof CookieJarClass;
+import { CookieJar } from "fetch-h2";
 interface ISavedAuthentication {
     email: string;
     password: string;
@@ -67,7 +66,7 @@ export declare class CoinsbeeClient {
         pm?: string;
         discountcode?: string;
     }): Promise<any>;
-    _call(uri: any, config?: any): Promise<any>;
+    _call(uri: any, config?: any): any;
     static fromObject(o: any): CoinsbeeClient;
     static fromJSON(s: string): CoinsbeeClient;
     userOrders({ from, length }: {
