@@ -1,7 +1,7 @@
-/// <reference types="node" />
+/// <reference types="node" resolution-mode="require"/>
 import { SocksProxyAgent } from "socks-proxy-agent";
 import https from "https";
-import { getLogger } from "./logger";
+import { getLogger } from "./logger.js";
 declare const CookieJarClass: any;
 type CookieJar = typeof CookieJarClass;
 interface ISavedAuthentication {
@@ -17,6 +17,7 @@ export declare class CoinsbeeClient {
     auth: null | ISavedAuthentication;
     static initialize(o: any): Promise<CoinsbeeClient>;
     _makeAgent(): https.Agent | SocksProxyAgent;
+    shoppingCart(): Promise<any>;
     getListingPage({ offset, cat, region, search, }: {
         offset?: number;
         cat?: string;
@@ -120,3 +121,4 @@ export declare class CoinsbeeClient {
     }): Promise<any>;
 }
 export {};
+//# sourceMappingURL=coinsbee.d.ts.map

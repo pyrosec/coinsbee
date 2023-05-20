@@ -1,33 +1,9 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CoinsbeeClient = void 0;
-const node_fetch_1 = __importStar(require("node-fetch"));
 const fetch_cookie_1 = __importDefault(require("fetch-cookie"));
 const socks_proxy_agent_1 = require("socks-proxy-agent");
 const https_proxy_agent_1 = __importDefault(require("https-proxy-agent"));
@@ -37,14 +13,25 @@ const url_1 = __importDefault(require("url"));
 const https_1 = __importDefault(require("https"));
 const user_agents_1 = __importDefault(require("user-agents"));
 const querystring_1 = __importDefault(require("querystring"));
-const logger_1 = require("./logger");
+const logger_js_1 = require("./logger.js");
 const vm_1 = __importDefault(require("vm"));
+const node_fetch_1 = __importDefault(require("node-fetch"));
 const ln = (v) => ((console.log(v)), v);
-const headersSet = node_fetch_1.Headers.prototype.set;
-node_fetch_1.Headers.prototype.set = function (...args) {
-    const [key, ...rest] = args;
-    return headersSet.call(this, key.toLowerCase(), ...rest);
+/*
+const headersSet = Headers.prototype.set;
+const headersHas = Headers.prototype.has;
+
+Headers.prototype.set = function (...args) {
+  const [ key, ...rest ] = args;
+  return headersSet.call(this, key.toLowerCase(), ...rest);
 };
+
+Headers.prototype.has = function (...args) {
+  const [ key ] = args;
+  if (key === 'Connection') return true;
+  return headersHas.call(this, ...args);
+};
+*/
 const solver = process.env.TWOCAPTCHA_API_KEY ? new _2captcha_1.Solver(process.env.TWOCAPTCHA_API_KEY) : null;
 const CookieJarClass = fetch_cookie_1.default.toughCookie.CookieJar;
 const serializeProducts = (list) => list.map((v) => v.href).join("|");
@@ -97,6 +84,12 @@ const tableToShoppingCart = (table) => {
     return { items, total };
 };
 class CoinsbeeClient {
+    logger;
+    jar;
+    proxyOptions;
+    insecure;
+    userAgent;
+    auth;
     static async initialize(o) {
         return new CoinsbeeClient(o);
     }
@@ -132,6 +125,15 @@ class CoinsbeeClient {
         }
         else
             return null;
+    }
+    async shoppingCart() {
+        return await this._call(url_1.default.format({
+            protocol: 'https:',
+            hostname: 'www.coinsbee.com',
+            pathname: '/en/shoppingcart'
+        }), {
+            method: 'GET'
+        });
     }
     async getListingPage({ offset = 0, cat = "all", region = "US", search = "", }) {
         const uri = url_1.default.format({
@@ -249,7 +251,7 @@ class CoinsbeeClient {
                 fetch_cookie_1.default.toughCookie.CookieJar.deserializeSync(jar)) ||
                 new fetch_cookie_1.default.toughCookie.CookieJar();
         this.insecure = insecure;
-        this.logger = logger || (0, logger_1.getLogger)();
+        this.logger = logger || (0, logger_js_1.getLogger)();
         this.auth = auth || null;
     }
     async checkout() {

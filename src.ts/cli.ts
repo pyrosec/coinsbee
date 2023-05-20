@@ -1,4 +1,4 @@
-import { CoinsbeeClient } from "./coinsbee";
+import { CoinsbeeClient } from "./coinsbee.js";
 import yargs from "yargs";
 import { camelCase } from "change-case";
 import fs from "fs-extra";
@@ -7,7 +7,9 @@ import url from "url";
 import "setimmediate";
 import mkdirp from "mkdirp";
 import path from "path";
-import { getLogger } from "./logger";
+import { getLogger } from "./logger.js";
+
+const args = yargs(process.argv);
 
 const logger = getLogger();
 
@@ -101,7 +103,7 @@ export async function callAPI(command, data) {
   delete data.coerce;
   if (data.insecure) coinsbee.insecure = true;
   delete data.insecure;
-  if (!coinsbee[camelCommand]) throw Error("command not foud: " + command);
+  if (!coinsbee[camelCommand]) throw Error("command not found: " + command);
   if (json)
     coinsbee.logger = new Proxy(
       {},
@@ -136,7 +138,7 @@ export async function saveSessionAs(name) {
 
 export async function loadSessionFrom(name) {
   const coinsbee = CoinsbeeClient.fromObject(
-    require(path.join(process.env.HOME, ".coinsbee", name))
+    JSON.parse(await fs.readFile(path.join(process.env.HOME, ".coinsbee", name), "utf8"))
   );
   await saveSession(coinsbee);
 }
@@ -159,8 +161,8 @@ export async function loadFiles(data: any) {
 }
 
 export async function runCLI() {
-  const [command] = yargs.argv._;
-  const options = Object.assign({}, yargs.argv);
+  const [command, ...subquery] = args.argv._.slice(2);
+  const options = Object.assign({}, args.argv);
   delete options._;
   const data = await loadFiles(
     Object.entries(options).reduce((r, [k, v]) => {
@@ -173,19 +175,19 @@ export async function runCLI() {
       return await initSession();
       break;
     case "set-proxy":
-      return await setProxy(yargs.argv._[1]);
+      return await setProxy(subquery[0]);
       break;
     case "unset-proxy":
       return await unsetProxy();
       break;
     case "save":
-      return await saveSessionAs(yargs.argv._[1]);
+      return await saveSessionAs(subquery[0]);
       break;
     case "load":
-      return await loadSessionFrom(yargs.argv._[1]);
+      return await loadSessionFrom(subquery[0]);
       break;
     default:
-      return await callAPI(yargs.argv._[0], data);
+      return await callAPI(command, data);
       break;
   }
 }

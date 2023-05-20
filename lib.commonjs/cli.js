@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.runCLI = exports.loadFiles = exports.loadSessionFrom = exports.saveSessionAs = exports.callAPI = exports.loadProxy = exports.unsetProxy = exports.setProxy = exports.loadSession = exports.initSession = exports.saveSession = void 0;
-const coinsbee_1 = require("./coinsbee");
+const coinsbee_js_1 = require("./coinsbee.js");
 const yargs_1 = __importDefault(require("yargs"));
 const change_case_1 = require("change-case");
 const fs_extra_1 = __importDefault(require("fs-extra"));
@@ -12,8 +12,9 @@ const url_1 = __importDefault(require("url"));
 require("setimmediate");
 const mkdirp_1 = __importDefault(require("mkdirp"));
 const path_1 = __importDefault(require("path"));
-const logger_1 = require("./logger");
-const logger = (0, logger_1.getLogger)();
+const logger_js_1 = require("./logger.js");
+const args = (0, yargs_1.default)(process.argv);
+const logger = (0, logger_js_1.getLogger)();
 async function saveSession(coinsbee, json = false, filename = "session.json") {
     await (0, mkdirp_1.default)(path_1.default.join(process.env.HOME, ".coinsbee"));
     await fs_extra_1.default.writeFile(path_1.default.join(process.env.HOME, ".coinsbee", filename), coinsbee.toJSON());
@@ -23,14 +24,14 @@ async function saveSession(coinsbee, json = false, filename = "session.json") {
 exports.saveSession = saveSession;
 async function initSession() {
     const proxyOptions = await loadProxy();
-    const coinsbee = await coinsbee_1.CoinsbeeClient.initialize({ proxyOptions });
+    const coinsbee = await coinsbee_js_1.CoinsbeeClient.initialize({ proxyOptions });
     logger.info("getting session");
     await saveSession(coinsbee);
 }
 exports.initSession = initSession;
 async function loadSession() {
     const proxyOptions = await loadProxy();
-    const coinsbee = coinsbee_1.CoinsbeeClient.fromJSON(await fs_extra_1.default.readFile(path_1.default.join(process.env.HOME, ".coinsbee", "session.json")));
+    const coinsbee = coinsbee_js_1.CoinsbeeClient.fromJSON(await fs_extra_1.default.readFile(path_1.default.join(process.env.HOME, ".coinsbee", "session.json")));
     coinsbee.proxyOptions = proxyOptions;
     return coinsbee;
 }
@@ -89,7 +90,7 @@ async function callAPI(command, data) {
         coinsbee.insecure = true;
     delete data.insecure;
     if (!coinsbee[camelCommand])
-        throw Error("command not foud: " + command);
+        throw Error("command not found: " + command);
     if (json)
         coinsbee.logger = new Proxy({}, {
             get(v) {
@@ -122,7 +123,7 @@ async function saveSessionAs(name) {
 }
 exports.saveSessionAs = saveSessionAs;
 async function loadSessionFrom(name) {
-    const coinsbee = coinsbee_1.CoinsbeeClient.fromObject(require(path_1.default.join(process.env.HOME, ".coinsbee", name)));
+    const coinsbee = coinsbee_js_1.CoinsbeeClient.fromObject(JSON.parse(await fs_extra_1.default.readFile(path_1.default.join(process.env.HOME, ".coinsbee", name), "utf8")));
     await saveSession(coinsbee);
 }
 exports.loadSessionFrom = loadSessionFrom;
@@ -145,8 +146,8 @@ async function loadFiles(data) {
 }
 exports.loadFiles = loadFiles;
 async function runCLI() {
-    const [command] = yargs_1.default.argv._;
-    const options = Object.assign({}, yargs_1.default.argv);
+    const [command, ...subquery] = args.argv._.slice(2);
+    const options = Object.assign({}, args.argv);
     delete options._;
     const data = await loadFiles(Object.entries(options).reduce((r, [k, v]) => {
         r[(0, change_case_1.camelCase)(k)] = String(v);
@@ -157,19 +158,19 @@ async function runCLI() {
             return await initSession();
             break;
         case "set-proxy":
-            return await setProxy(yargs_1.default.argv._[1]);
+            return await setProxy(subquery[0]);
             break;
         case "unset-proxy":
             return await unsetProxy();
             break;
         case "save":
-            return await saveSessionAs(yargs_1.default.argv._[1]);
+            return await saveSessionAs(subquery[0]);
             break;
         case "load":
-            return await loadSessionFrom(yargs_1.default.argv._[1]);
+            return await loadSessionFrom(subquery[0]);
             break;
         default:
-            return await callAPI(yargs_1.default.argv._[0], data);
+            return await callAPI(command, data);
             break;
     }
 }

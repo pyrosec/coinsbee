@@ -48,7 +48,7 @@ const createLogger = (proc) => {
     });
     return logger;
 };
-const logger = createLogger(require("../package").name);
+const logger = createLogger("coinsbee");
 function getLogger() {
     return logger;
 }

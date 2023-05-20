@@ -1,4 +1,3 @@
-import fetch, { Headers } from "node-fetch";
 import makeFetchCookie from "fetch-cookie";
 import { SocksProxyAgent } from "socks-proxy-agent";
 import HttpsProxyAgent from "https-proxy-agent";
@@ -8,17 +7,28 @@ import url, { URL } from "url";
 import https from "https";
 import UserAgent from "user-agents";
 import qs from "querystring";
-import { getLogger } from "./logger";
+import { getLogger } from "./logger.js";
 import vm from "vm";
+import fetch from "node-fetch";
+
 
 const ln = (v) => ((console.log(v)), v);
 
+/*
 const headersSet = Headers.prototype.set;
+const headersHas = Headers.prototype.has;
 
 Headers.prototype.set = function (...args) {
   const [ key, ...rest ] = args;
   return headersSet.call(this, key.toLowerCase(), ...rest);
 };
+
+Headers.prototype.has = function (...args) {
+  const [ key ] = args;
+  if (key === 'Connection') return true;
+  return headersHas.call(this, ...args);
+};
+*/
 
 const solver = process.env.TWOCAPTCHA_API_KEY ? new Solver(process.env.TWOCAPTCHA_API_KEY) : null;
 
@@ -129,6 +139,15 @@ export class CoinsbeeClient {
         rejectUnauthorized: !this.insecure,
       });
     } else return null;
+  }
+  async shoppingCart() {
+    return await this._call(url.format({
+      protocol: 'https:',
+      hostname: 'www.coinsbee.com',
+      pathname: '/en/shoppingcart'
+    }), {
+      method: 'GET'
+    });
   }
   async getListingPage({
     offset = 0,

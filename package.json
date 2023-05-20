@@ -1,14 +1,27 @@
 {
   "name": "coinsbee",
   "version": "0.1.0",
+  "type": "module",
   "description": "coinsbee API client",
   "main": "lib/index.js",
   "repository": "https://github.com/pyrosec/coinsbee",
   "bin": {
-    "coinsbee": "./bin/coinsbee.js"
+    "coinsbee": "./bin/coinsbee.cjs"
+  },
+  "exports": {
+    ".": {
+      "import": "./lib.esm/index.js",
+      "default": "./lib.commonjs/index.js"
+    },
+    "./cli": {
+      "import": "./lib.esm/cli.js",
+      "default": "./lib.commonjs/cli.js"
+    }
   },
   "scripts": {
-    "build": "tsc",
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "build:commonjs": "tsc -p tsconfig.commonjs.json",
+    "build": "npm-run-all build:esm build:commonjs",
     "prettier": "prettier --write ./src.ts/**/*.ts"
   },
   "author": "pyrosec",
@@ -21,7 +34,7 @@
     "fetch-cookie": "^2.1.0",
     "fs-extra": "^11.1.1",
     "https-proxy-agent": "3.0.0",
-    "node-fetch": "2",
+    "node-fetch": "^3.0.0-beta.10",
     "querystring": "^0.2.1",
     "setimmediate": "^1.0.5",
     "socks-proxy-agent": "^7.0.0",
@@ -32,6 +45,7 @@
   "devDependencies": {
     "@types/node": "^18.16.3",
     "nice-repl": "^0.1.2",
+    "npm-run-all": "^4.1.5",
     "prettier": "^2.8.8",
     "typescript": "^5.0.4"
   }

@@ -1,1 +1,1 @@
-export * from "./coinsbee";
+export * from "./coinsbee.js";
