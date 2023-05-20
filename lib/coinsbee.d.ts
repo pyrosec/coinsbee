@@ -53,7 +53,7 @@ export declare class CoinsbeeClient {
         id?: any;
         q?: string;
     }): Promise<any>;
-    getListings({ cat, region, search }: {
+    getProducts({ cat, region, search }: {
         cat?: string;
         region?: string;
         search?: string;

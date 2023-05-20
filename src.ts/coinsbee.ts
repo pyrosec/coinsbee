@@ -20,11 +20,11 @@ Headers.prototype.set = function (...args) {
   return headersSet.call(this, key.toLowerCase(), ...rest);
 };
 
-const solver = new Solver(process.env.TWOCAPTCHA_API_KEY);
+const solver = process.env.TWOCAPTCHA_API_KEY ? new Solver(process.env.TWOCAPTCHA_API_KEY) : null;
 
 const CookieJarClass = (makeFetchCookie.toughCookie as any).CookieJar;
 
-const serializeListings = (list) => list.map((v) => v.href).join("|");
+const serializeProducts = (list) => list.map((v) => v.href).join("|");
 
 type CookieJar = typeof CookieJarClass;
 
@@ -174,7 +174,7 @@ export class CoinsbeeClient {
   }
   async _getHref({ name, search }) {
     this.logger.info("getting listings");
-    const listings = await this.getListings({ search });
+    const listings = await this.getProducts({ search });
     return listings.find((v) => v.name === name).href;
   }
   _getProductData({ text }) {
@@ -239,7 +239,7 @@ export class CoinsbeeClient {
       ...data,
     };
   }
-  async getListings({ cat = "all", region = "US", search = "" }) {
+  async getProducts({ cat = "all", region = "US", search = "" }) {
     let result = [];
     let lastSerialized = null;
     for (let i = 0; ; i += 24) {
@@ -249,7 +249,7 @@ export class CoinsbeeClient {
         search,
         offset: i,
       });
-      const serialized = serializeListings(toAdd);
+      const serialized = serializeProducts(toAdd);
       if (!toAdd.length || lastSerialized === serialized) return result;
       lastSerialized = serialized;
       result = result.concat(toAdd);
@@ -463,6 +463,7 @@ export class CoinsbeeClient {
     return this.rewriteAndFollowRedirect(response);
   }
   async login({ email, password }) {
+    if (!solver) throw Error('must set TWOCAPTCHA_API_KEY');
     this.auth = this.auth || ({} as ISavedAuthentication);
     this.auth.email = email || this.auth.email;
     this.auth.password = password || this.auth.password;
@@ -502,6 +503,7 @@ export class CoinsbeeClient {
     country,
     birthday,
   }) {
+    if (!solver) throw Error('must set TWOCAPTCHA_API_KEY');
     this.logger.info("signup|" + email);
     const response: any = await this.getSignupPage();
     const c = await this.solveCaptcha(await response.text());
