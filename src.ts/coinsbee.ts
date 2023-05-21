@@ -8,6 +8,34 @@ import vm from "vm";
 import { ethers } from "ethers";
 import stringEntropy from "string-entropy";
 import crypto from "crypto";
+/*
+import makeFetchCookie from "fetch-cookie";
+
+const CookieJar = (makeFetchCookie as any).toughCookie.CookieJar;
+
+class GuerrillaSession {
+  public jar: any;
+  public ip: any;
+  public userAgent: any;
+  constructor() {
+    this.jar = new CookieJar();
+    this.ip = null;
+    this.userAgent = new UserAgent().toString();
+  }
+  async _fetch(method, config = {}) {
+    const fetchCookie = makeFetchCookie(fetch, this.jar);
+    config.headers = config.headers || {};
+    config.headers['user-agent'] = this.userAgent;
+    return await fetchCookie(method, config);
+  }
+  async checkIp() {
+    const { ip } = await (await fetch('https://api64.ipify.org/json', { method: 'GET' })).json();
+    this.ip = ip;
+    return ip;
+  }
+  async _call(methodName, data) {
+    return await this._fetch(url.format({ protocol: 'https:', hostname: 'api.guerrillamail.com', pathname: 'ajax.php', search: '?' + qs.stringify({ f: method, ip: this.ip, 
+																		  */
 
 const DEFAULT_ENTROPY = 70;
 
