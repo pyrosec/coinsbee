@@ -1,27 +1,14 @@
 {
   "name": "coinsbee",
   "version": "0.1.0",
-  "type": "module",
   "description": "coinsbee API client",
   "main": "lib/index.js",
   "repository": "https://github.com/pyrosec/coinsbee",
   "bin": {
-    "coinsbee": "./bin/coinsbee.cjs"
-  },
-  "exports": {
-    ".": {
-      "import": "./lib.esm/index.js",
-      "default": "./lib.commonjs/index.js"
-    },
-    "./cli": {
-      "import": "./lib.esm/cli.js",
-      "default": "./lib.commonjs/cli.js"
-    }
+    "coinsbee": "./bin/coinsbee.js"
   },
   "scripts": {
-    "build:esm": "tsc -p tsconfig.esm.json",
-    "build:commonjs": "tsc -p tsconfig.commonjs.json",
-    "build": "npm-run-all build:esm build:commonjs",
+    "build": "tsc",
     "prettier": "prettier --write ./src.ts/**/*.ts"
   },
   "author": "pyrosec",
@@ -29,6 +16,7 @@
   "private": false,
   "dependencies": {
     "2captcha": "^3.0.6",
+    "base-puppeteer": "https://github.com/pyrosec/base-puppeteer",
     "change-case": "^4.1.2",
     "cheerio": "^1.0.0-rc.12",
     "fetch-cookie": "^2.1.0",

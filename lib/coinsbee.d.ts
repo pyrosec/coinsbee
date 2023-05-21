@@ -1,22 +1,10 @@
-/// <reference types="node" resolution-mode="require"/>
-import { SocksProxyAgent } from "socks-proxy-agent";
-import https from "https";
-import { getLogger } from "./logger.js";
-declare const CookieJarClass: any;
-type CookieJar = typeof CookieJarClass;
+import { BasePuppeteer } from "base-puppeteer";
 interface ISavedAuthentication {
     email: string;
     password: string;
 }
-export declare class CoinsbeeClient {
-    logger: ReturnType<typeof getLogger>;
-    jar: CookieJar;
-    proxyOptions: any;
-    insecure: boolean;
-    userAgent: string;
+export declare class CoinsbeeClient extends BasePuppeteer {
     auth: null | ISavedAuthentication;
-    static initialize(o: any): Promise<CoinsbeeClient>;
-    _makeAgent(): https.Agent | SocksProxyAgent;
     shoppingCart(): Promise<any>;
     getListingPage({ offset, cat, region, search, }: {
         offset?: number;
@@ -36,6 +24,7 @@ export declare class CoinsbeeClient {
         brandId: string;
         metadata: any;
     };
+    homepage(): Promise<void>;
     loadProduct({ name, search }: {
         name: any;
         search: any;
@@ -59,8 +48,8 @@ export declare class CoinsbeeClient {
         region?: string;
         search?: string;
     }): Promise<any[]>;
-    constructor({ logger, jar, userAgent, auth, insecure }: any);
-    checkout(): Promise<any>;
+    constructor(o: any);
+    checkout(): Promise<void>;
     checkoutProcessing({ currency, nw, pm, discountcode, }: {
         currency?: string;
         nw?: string;
@@ -68,8 +57,6 @@ export declare class CoinsbeeClient {
         discountcode?: string;
     }): Promise<any>;
     _call(uri: any, config?: any): Promise<any>;
-    static fromObject(o: any): CoinsbeeClient;
-    static fromJSON(s: string): CoinsbeeClient;
     userOrders({ from, length }: {
         from: any;
         length?: string;
@@ -91,22 +78,15 @@ export declare class CoinsbeeClient {
         btnBuyCoinGate?: string;
         cpf?: string;
         fullname?: string;
-    }): Promise<any[] | {
-        config: any;
-        payment: any;
-    }>;
-    toObject(): {
-        userAgent: string;
-        jar: any;
-        auth: ISavedAuthentication;
-    };
-    toJSON(): string;
+    }): Promise<any>;
     rewriteAndFollowRedirect(response: any): Promise<any>;
     getSignupPage(): Promise<any>;
     login({ email, password }: {
         email: any;
         password: any;
-    }): Promise<any>;
+    }): Promise<{
+        success: boolean;
+    }>;
     solveCaptcha(pageContent: string): Promise<string>;
     signup({ email, password, firstname, lastname, street, postcode, city, country, birthday, }: {
         email: any;
@@ -121,4 +101,3 @@ export declare class CoinsbeeClient {
     }): Promise<any>;
 }
 export {};
-//# sourceMappingURL=coinsbee.d.ts.map
