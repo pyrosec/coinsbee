@@ -122,6 +122,8 @@ export declare class CoinsbeeClient extends BasePuppeteer {
         city: any;
         country: any;
         birthday: any;
-    }): Promise<any>;
+    }): Promise<{
+        success: boolean;
+    }>;
 }
 export {};
