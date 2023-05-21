@@ -158,6 +158,7 @@ export class CoinsbeeClient extends BasePuppeteer {
     return this._getProductData({ text });
   }
   async addToCart({ id, q = "1" }) {
+    await this.homepage();
     return await (
       await this._call(
         url.format({
@@ -173,6 +174,7 @@ export class CoinsbeeClient extends BasePuppeteer {
     ).json();
   }
   async getShoppingCart({ method = "refresh", id = null, q = "0" }) {
+    await this.homepage();
     const data = await (
       await this._call(
         url.format({
@@ -271,6 +273,7 @@ export class CoinsbeeClient extends BasePuppeteer {
     length = "100"
   }) {
     const query: any = {};
+    await this.homepage();
     Array(4).fill(0).forEach((v, i) => {
       query['columns[' + i + '][data]'] = String(i);
       query['columns[' + i + '][name]'] = "";
@@ -316,6 +319,7 @@ export class CoinsbeeClient extends BasePuppeteer {
     orderid,
     hash
   }) {
+    await this.homepage();
     const response = await this._call(url.format({
       protocol: 'https:',
       hostname: 'www.coinsbee.com',
@@ -402,6 +406,7 @@ export class CoinsbeeClient extends BasePuppeteer {
     const c = await this.solveCaptcha(text);
     await this.type({ selector: 'input[type="text"][name="c"]', value: c });
     await this.click({ selector: 'button[type="submit"]' });
+    await this.timeout({ n: 1000 });
     return { success: true };
   }
   async solveCaptcha(pageContent: string) {
