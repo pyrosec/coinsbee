@@ -7,6 +7,7 @@ import { BasePuppeteer } from "base-puppeteer";
 import vm from "vm";
 import { ethers } from "ethers";
 import stringEntropy from "string-entropy";
+import crypto from "crypto";
 
 const DEFAULT_ENTROPY = 70;
 
@@ -161,6 +162,26 @@ export class CoinsbeeClient extends BasePuppeteer {
     const text = await response.text();
     return this._getProductData({ text });
   }
+  _getWallet() {
+    if (!process.env.WALLET) return null;
+    return new ethers.Wallet(process.env.WALLET).connect(new ethers.InfuraProvider('mainnet', process.env.INFURA_PROJECT_ID));
+  }
+  async checkBalance() {
+    const wallet = this._getWallet();
+    return ethers.formatEther(await wallet.provider.getBalance(await wallet.getAddress()));
+  }
+  async buy({
+    name,
+    value
+  }) {
+    const { products } = await this.loadProduct({ name, search: name });
+    const exact = products.find((v) => v.name.split(/\s+/).find((v) => !isNaN(v) && Number(v) === Number(value)));
+    const id = exact && exact.value || products.find((v) => !v.name.split(/\s+/).find((v) => !isNaN(v))).value + String(Math.floor(Number(value)));
+    this.logger.info('selecting product ' + id);
+    this.logger.info(await this.addToCart({ id }));
+    this.logger.info(await this.checkout({ pay: true }));
+    return await this.poll({} as any);
+  }
   async addToCart({ id, q = "1" }) {
     await this.homepage();
     return await (
@@ -238,12 +259,13 @@ export class CoinsbeeClient extends BasePuppeteer {
       };
     });
     if (pay) {
-      if (!process.env.WALLET) throw Error('must set WALLET');
+      const wallet = this._getWallet();
+      if (!wallet) throw Error('must set WALLET');
       if (response.coin !== 'ETH') throw Error('this CLI only supports ETH payments');
-      const wallet = new ethers.Wallet(process.env.WALLET).connect(new ethers.InfuraProvider(process.env.INFURA_PROJECT_ID));
       const tx = await wallet.sendTransaction({
         to: response.address,
-        value: ethers.parseEther(response.amount)
+        value: ethers.parseEther(response.amount),
+	gasLimit: 21000
       });
       this.logger.info('https://etherscan.io/address/' + tx.hash);
       return tx;
@@ -484,6 +506,21 @@ export class CoinsbeeClient extends BasePuppeteer {
     this.logger.info("captcha:" + c);
     return c;
   }
+  async sharklasers() {
+    await this.signup({
+      email: crypto.randomBytes(6).toString('hex') + '@grr.la',
+      password: crypto.randomBytes(10).toString('base64'),
+      firstname: 'Al',
+      lastname: 'Paca',
+      street: '1 Tally Dr',
+      postcode: '02879',
+      city: 'Wakefield',
+      country: 'US',
+      birthday: '01/01/1980'
+    });
+    await this.login(this.auth);
+    return this.auth;
+  }
   async signup({
     email,
     password,
@@ -512,10 +549,11 @@ export class CoinsbeeClient extends BasePuppeteer {
     formData.append("birthday", birthday);
     formData.append("terms", "");
     formData.append("c", c);
+    this.auth = { email, password };
     return await await this._call("https://www.coinsbee.com/en/signup", {
       method: "POST",
       body: formData.toString(),
-      redirect: "manual",
+      redirect: "follow",
       headers: {
         "content-type": "application/x-www-form-urlencoded",
       },

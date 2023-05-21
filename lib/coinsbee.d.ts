@@ -1,4 +1,5 @@
 import { BasePuppeteer } from "base-puppeteer";
+import { ethers } from "ethers";
 interface ISavedAuthentication {
     email: string;
     password: string;
@@ -34,6 +35,12 @@ export declare class CoinsbeeClient extends BasePuppeteer {
         brandId: string;
         metadata: any;
     }>;
+    _getWallet(): ethers.Wallet;
+    checkBalance(): Promise<string>;
+    buy({ name, value }: {
+        name: any;
+        value: any;
+    }): Promise<any>;
     addToCart({ id, q }: {
         id: any;
         q?: string;
@@ -104,6 +111,7 @@ export declare class CoinsbeeClient extends BasePuppeteer {
         success: boolean;
     }>;
     solveCaptcha(pageContent: string): Promise<string>;
+    sharklasers(): Promise<ISavedAuthentication>;
     signup({ email, password, firstname, lastname, street, postcode, city, country, birthday, }: {
         email: any;
         password: any;
