@@ -49,7 +49,10 @@ export declare class CoinsbeeClient extends BasePuppeteer {
         search?: string;
     }): Promise<any[]>;
     constructor(o: any);
-    checkout(): Promise<void>;
+    checkout({ pay, coin }: {
+        pay: any;
+        coin?: string;
+    }): Promise<any>;
     checkoutProcessing({ currency, nw, pm, discountcode, }: {
         currency?: string;
         nw?: string;
@@ -61,6 +64,19 @@ export declare class CoinsbeeClient extends BasePuppeteer {
         from: any;
         length?: string;
     }): Promise<any>;
+    pollOne(): Promise<any>;
+    lastOrder(): Promise<{
+        orderid: any;
+        hash: any;
+    }>;
+    _processPoll(tick: any): Promise<any>;
+    poll({ entropy }: {
+        entropy?: number;
+    }): Promise<any>;
+    retrieveCodeFromUrl({ url, entropy }: {
+        url: any;
+        entropy: any;
+    }): Promise<string[]>;
     userOrdersDetails({ orderid, hash }: {
         orderid: any;
         hash: any;

@@ -5,6 +5,10 @@ import qs from "querystring";
 import { getLogger } from "./logger.js";
 import { BasePuppeteer } from "base-puppeteer";
 import vm from "vm";
+import { ethers } from "ethers";
+import entropy from "string-entropy";
+
+const DEFAULT_ENTROPY = 70;
 
 const solver = process.env.TWOCAPTCHA_API_KEY ? new Solver(process.env.TWOCAPTCHA_API_KEY) : null;
 
@@ -217,10 +221,34 @@ export class CoinsbeeClient extends BasePuppeteer {
     super(o)
     this.auth = o.auth || null;
   }
-  async checkout() {
+  async checkout({ pay, coin = 'ETH' }) {
     await this.goto({ url: url.format({ protocol: 'https:', hostname: 'www.coinsbee.com', pathname: '/en/checkout' }) });
     await this.waitForSelector({ selector: 'button#btnBuyCoingate' });
     await this.click({ selector: 'button#btnBuyCoingate' });
+    await this.waitForSelector({ selector: 'div.method-body' });
+    await this._page.evaluate((coin) => [].slice.call((document as any).querySelectorAll('li.check-item')).find((v) => v.innerText === coin).click(), coin);
+    await this._page.evaluate(() => (document as any).evaluate("//span[contains(text(), 'View Address')]", document, null, XPathResult.ANY_TYPE, null).iterateNext().click());
+    await this.waitForSelector({ selector: 'div.payment-amount span.amount' });
+    const response = await this._page.evaluate(() => {
+      const el = (document as any).querySelector('div.payment-amount');
+      return {
+        coin: el.querySelector('span.exp-coin-name-main').innerText.trim(),
+        amount: el.querySelector('span.amount').innerText.trim(),
+	address: (document as any).querySelector('div.view-address-wrapper div.infos div.info-item-content span').innerText
+      };
+    });
+    if (pay) {
+      if (!process.env.WALLET) throw Error('must set WALLET');
+      if (response.coin !== 'ETH') throw Error('this CLI only supports ETH payments');
+      const wallet = new ethers.Wallet(process.env.WALLET).connect(new ethers.InfuraProvider(process.env.INFURA_PROJECT_ID));
+      const tx = await wallet.sendTransaction({
+        to: response.address,
+        value: ethers.parseEther(response.amount)
+      });
+      this.logger.info('https://etherscan.io/address/' + tx.hash);
+      return tx;
+    }
+    return response;
   }
   async checkoutProcessing({
     currency = "ETH",
@@ -315,6 +343,45 @@ export class CoinsbeeClient extends BasePuppeteer {
       })
     };
   }
+  async pollOne() {
+    const tick = await this.userOrdersDetails(await this.lastOrder());
+    return await this._processPoll(tick);
+  }
+  async lastOrder() {
+    const { data } = await this.userOrders({} as any);
+    const { orderid, hash } = data[0];
+    return { orderid, hash };
+  }
+  async _processPoll(tick: any) {
+    const { product, pin, code, url } = tick;
+    if (url) {
+      return Object.assign({}, tick, {
+        retrieved: await this.retrieveCodeFromUrl({ url, entropy })
+      });
+    }
+    if (pin || code) return tick;
+    return null;
+  }
+  async poll({ entropy = DEFAULT_ENTROPY }) {
+    const lastOrder = await this.lastOrder();
+    while (true) {
+      const tick = await this.userOrdersDetails(lastOrder);
+      const processed = await this._processPoll(tick);
+      if (processed) return processed;
+      await this.timeout({ n: 1000 });
+    }
+  }
+  async retrieveCodeFromUrl({
+    url,
+    entropy
+  }) {
+    const content = await (await this._call(url, {
+      method: "GET"
+    })).text();
+    const tokens = cheerio.load(content)('body').text().split(/[\s\n]+/).filter(Boolean)
+    return tokens.filter((v) => v.length < 32 && entropy(v) > entropy);
+  }
+
   async userOrdersDetails({
     orderid,
     hash
@@ -330,7 +397,7 @@ export class CoinsbeeClient extends BasePuppeteer {
     const $ = cheerio.load(await response.text());
     const cells = [];
     $('tbody td').each(function () {
-      cells.push($(this).text().trim());
+      cells.push($(this).find('a').attr('href') || $(this).text().trim());
     });
     const [ product, code, pin, urlCell ] = cells;
     return {
@@ -343,8 +410,8 @@ export class CoinsbeeClient extends BasePuppeteer {
   async checkoutProceed({
     discountcode = "",
     terms = "",
-    coin = "BTC",
-    network = 1,
+    coin = "ETH",
+    network = 2,
     btnBuyCoinGate = "",
     cpf = "",
     fullname = ""
