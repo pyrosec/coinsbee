@@ -6,7 +6,7 @@ import { getLogger } from "./logger.js";
 import { BasePuppeteer } from "base-puppeteer";
 import vm from "vm";
 import { ethers } from "ethers";
-import entropy from "string-entropy";
+import stringEntropy from "string-entropy";
 
 const DEFAULT_ENTROPY = 70;
 
@@ -352,7 +352,7 @@ export class CoinsbeeClient extends BasePuppeteer {
     const { orderid, hash } = data[0];
     return { orderid, hash };
   }
-  async _processPoll(tick: any) {
+  async _processPoll(tick: any, entropy = DEFAULT_ENTROPY) {
     const { product, pin, code, url } = tick;
     if (url) {
       return Object.assign({}, tick, {
@@ -366,7 +366,7 @@ export class CoinsbeeClient extends BasePuppeteer {
     const lastOrder = await this.lastOrder();
     while (true) {
       const tick = await this.userOrdersDetails(lastOrder);
-      const processed = await this._processPoll(tick);
+      const processed = await this._processPoll(tick, entropy);
       if (processed) return processed;
       await this.timeout({ n: 1000 });
     }
@@ -379,7 +379,7 @@ export class CoinsbeeClient extends BasePuppeteer {
       method: "GET"
     })).text();
     const tokens = cheerio.load(content)('body').text().split(/[\s\n]+/).filter(Boolean)
-    return tokens.filter((v) => v.length < 32 && entropy(v) > entropy);
+    return tokens.filter((v) => /^[a-zA-Z0-9\-]+$/.test(v) && v.length < 32 && stringEntropy(v) > entropy);
   }
 
   async userOrdersDetails({

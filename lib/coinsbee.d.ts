@@ -69,7 +69,7 @@ export declare class CoinsbeeClient extends BasePuppeteer {
         orderid: any;
         hash: any;
     }>;
-    _processPoll(tick: any): Promise<any>;
+    _processPoll(tick: any, entropy?: number): Promise<any>;
     poll({ entropy }: {
         entropy?: number;
     }): Promise<any>;
