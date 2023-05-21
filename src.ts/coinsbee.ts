@@ -548,7 +548,6 @@ export class CoinsbeeClient extends BasePuppeteer {
       append("street", street);
       append("postcode", postcode);
       append("city", city);
-      append("country", country);
       append("birthday", birthday);
       append("terms", "");
       append("c", c);
