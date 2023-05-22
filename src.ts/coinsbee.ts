@@ -177,7 +177,7 @@ export class CoinsbeeClient extends BasePuppeteer {
   }) {
     const { products } = await this.loadProduct({ name, search: name });
     const exact = products.find((v) => v.name.split(/\s+/).find((v) => !isNaN(v) && Number(v) === Number(value)));
-    const id = exact && exact.value || products.find((v) => !v.name.split(/\s+/).find((v) => !isNaN(v))).value + String(Math.floor(Number(value)));
+    const id = exact && exact.value || products.find((v) => !v.name.split(/\s+/).find((v) => !isNaN(v))).value + '_' + String(Math.floor(Number(value)));
     this.logger.info('selecting product ' + id);
     this.logger.info(await this.addToCart({ id }));
     this.logger.info(await this.checkout({ pay: true }));
