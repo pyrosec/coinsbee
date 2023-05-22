@@ -15,7 +15,7 @@ export class GuerrillaSession {
     this.ip = null;
     this.userAgent = new UserAgent().toString();
   }
-  async _fetch(method, config = {}) {
+  async _fetch(method, config = ({} as any)) {
     const fetchCookie = makeFetchCookie(fetch, this.jar);
     config.headers = config.headers || {};
     config.headers['user-agent'] = this.userAgent;
