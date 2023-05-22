@@ -514,7 +514,7 @@ export class CoinsbeeClient extends BasePuppeteer {
     const email = await geurillaSession.createGuerillaMailAccount();
     console.log(email);
     await this.signup({
-      email: crypto.randomBytes(6).toString('hex') + '@grr.la',
+      email: email,
       password: crypto.randomBytes(10).toString('base64'),
       firstname: 'Al',
       lastname: 'Paca',
@@ -524,6 +524,9 @@ export class CoinsbeeClient extends BasePuppeteer {
       country: 'US',
       birthday: '01/01/1980'
     });
+    await this.timeout({ n: 60000 });
+    const verificationLink = await geurillaSession.checkMailForVerificationLink();
+    console.log(verificationLink);
     await this.login(this.auth);
     return this.auth;
   }
