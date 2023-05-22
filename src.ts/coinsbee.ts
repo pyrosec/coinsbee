@@ -515,7 +515,7 @@ export class CoinsbeeClient extends BasePuppeteer {
     await guerrillaSession.setEmailUser({ emailUser, lang: 'en' });
     const  { email_addr: email } = await guerrillaSession.getEmailAddress();
     this.logger.info(email);
-    await this.signup({
+    const auth = await this.signup({
       email: email,
       password: crypto.randomBytes(10).toString('base64'),
       firstname: 'Al',
@@ -530,17 +530,13 @@ export class CoinsbeeClient extends BasePuppeteer {
     const verificationLink = await (async () => {
       while (true) {
         const response = await guerrillaSession.checkEmail({ seq: 0 });
-	this.logger.info(response);
 	const { list } = response;
 	const email = list.find((v) => v.mail_subject.match(/coinsbee.com/));
 	if (email) {
           const item = await guerrillaSession.fetchEmail({ emailId: email.mail_id });
           this.logger.info('got E-mail!');
 
-	  const r = require('repl').start('> ');
-	  r.context.email = item;
-	  await new Promise(() => {});
-          const verificationLink = (email.mail_body.match(/https:\/\/www\.coinsbee\.com\/en\/signup&id=\d+&hash=[a-zA-Z0-9]+/g) || [])[0];
+	  const verificationLink = item.mail_body.split(/\s+/).map((v) => v.match(/(?:https:\/\/www\.coinsbee\.com\/en\/signup&id=[^"]+)/g)).filter(Boolean)[0][0]
 	  if (!verificationLink) {
             this.logger.debug(email);
             throw Error('Unexpected E-mail from coinsbee');
@@ -552,9 +548,9 @@ export class CoinsbeeClient extends BasePuppeteer {
     })();
     this.logger.info('got verification link!');
     this.goto({ url: verificationLink });
-    await this.timeout({ n: 1000 });
-    await this.login(this.auth);
-    return this.auth;
+    await this.waitForSelector({ selector: 'div.alert-success' });
+    await this.login(auth);
+    return auth;
   }
   async signup({
     email,
@@ -590,6 +586,6 @@ export class CoinsbeeClient extends BasePuppeteer {
     }, { email, password, firstname, lastname, street, postcode, city, country, birthday, c });
     await this.click({ selector: 'button[type="submit"]' });
     await this.timeout({ n: 1000 });
-    return { success: true };
+    return { email, password };
   }
 }

@@ -111,7 +111,10 @@ export declare class CoinsbeeClient extends BasePuppeteer {
         success: boolean;
     }>;
     solveCaptcha(pageContent: string): Promise<string>;
-    sharklasers(): Promise<ISavedAuthentication>;
+    sharklasers(): Promise<{
+        email: any;
+        password: any;
+    }>;
     signup({ email, password, firstname, lastname, street, postcode, city, country, birthday, }: {
         email: any;
         password: any;
@@ -123,7 +126,8 @@ export declare class CoinsbeeClient extends BasePuppeteer {
         country: any;
         birthday: any;
     }): Promise<{
-        success: boolean;
+        email: any;
+        password: any;
     }>;
 }
 export {};

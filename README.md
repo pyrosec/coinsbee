@@ -10,11 +10,13 @@ Set environment variable `TWOCAPTCHA_API_KEY`
 
 ```sh
 npm install -g
-coinsbee init
+coinsbee init session
 coinsbee signup --email smartshopper@gmail.com --password GiftsAreNiceToGive11$ --firstname Smart --lastname Shopper --street '1 Tally Dr' --postcode 02879 --city 'Wakefield' --country 'US' --birthday '01/01/1980'
 # an activation link will be sent to the E-mail
 coinsbee login --email smartshopper@gmail.com --password GiftsAreNiceToGive11$
 ```
+
+For privacy, use the `coinsbee sharklasers` command to create an account with a randomly generated E-mail via GuerrillaMail.
 
 To retrieve an updated list of cards sold on the platform:
 
