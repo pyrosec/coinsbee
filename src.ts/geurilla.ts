@@ -40,8 +40,9 @@ export class GuerrillaSession {
 
   async checkMailForVerificationLink() {
     const response = await this._call('check_email', {});
-    console.log("check_email api response: ", response)
-    const { list } = await response.json();
+    const jsonResponse = response.json();
+    console.log("check_email api response: ", jsonResponse);
+    const { list } = jsonResponse;
     console.log("checking mail: ", list);
     const verificationEmail = list.find((email: any) => email.mail_subject === "Signup - coinsbee.com");
   
