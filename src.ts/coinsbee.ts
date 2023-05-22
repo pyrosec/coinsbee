@@ -1,7 +1,6 @@
 import { Solver } from "2captcha";
 import cheerio from "cheerio";
 import url, { URL } from "url";
-import { GuerrillaSession } from "./geurilla";
 import qs from "querystring";
 import { getLogger } from "./logger.js";
 import { BasePuppeteer } from "base-puppeteer";
@@ -9,8 +8,7 @@ import vm from "vm";
 import { ethers } from "ethers";
 import stringEntropy from "string-entropy";
 import crypto from "crypto";
-
-																		 
+import { GuerrillaMail } from "guerrillamail";
 
 const DEFAULT_ENTROPY = 70;
 
@@ -510,9 +508,13 @@ export class CoinsbeeClient extends BasePuppeteer {
     return c;
   }
   async sharklasers() {
-    const geurillaSession = await new GuerrillaSession();
-    const email = await geurillaSession.createGuerillaMailAccount();
-    console.log(email);
+    const guerrillaSession = new GuerrillaMail();
+    await guerrillaSession.checkIp();
+    const emailUser = crypto.randomBytes(8).toString('hex');
+    await guerrillaSession.getEmailAddress();
+    await guerrillaSession.setEmailUser({ emailUser, lang: 'en' });
+    const  { email_addr: email } = await guerrillaSession.getEmailAddress();
+    this.logger.info(email);
     await this.signup({
       email: email,
       password: crypto.randomBytes(10).toString('base64'),
@@ -524,9 +526,33 @@ export class CoinsbeeClient extends BasePuppeteer {
       country: 'US',
       birthday: '01/01/1980'
     });
-    await this.timeout({ n: 60000 });
-    const verificationLink = await geurillaSession.checkMailForVerificationLink();
-    console.log(verificationLink);
+    await this.timeout({ n: 5000 });
+    const verificationLink = await (async () => {
+      while (true) {
+        const response = await guerrillaSession.checkEmail({ seq: 0 });
+	this.logger.info(response);
+	const { list } = response;
+	const email = list.find((v) => v.mail_subject.match(/coinsbee.com/));
+	if (email) {
+          const item = await guerrillaSession.fetchEmail({ emailId: email.mail_id });
+          this.logger.info('got E-mail!');
+
+	  const r = require('repl').start('> ');
+	  r.context.email = item;
+	  await new Promise(() => {});
+          const verificationLink = (email.mail_body.match(/https:\/\/www\.coinsbee\.com\/en\/signup&id=\d+&hash=[a-zA-Z0-9]+/g) || [])[0];
+	  if (!verificationLink) {
+            this.logger.debug(email);
+            throw Error('Unexpected E-mail from coinsbee');
+	  } else {
+            return verificationLink;
+	  }
+	} else { this.logger.info('No E-mail yet -- re-attempt in 3s ...'); await this.timeout({ n: 3000 }); }
+      }
+    })();
+    this.logger.info('got verification link!');
+    this.goto({ url: verificationLink });
+    await this.timeout({ n: 1000 });
     await this.login(this.auth);
     return this.auth;
   }
