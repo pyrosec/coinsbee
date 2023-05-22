@@ -496,7 +496,7 @@ export class CoinsbeeClient extends BasePuppeteer {
     const c = await this.solveCaptcha(text);
     await this.type({ selector: 'input[type="text"][name="c"]', value: c });
     await this.click({ selector: 'button[type="submit"]' });
-    await this.timeout({ n: 1000 });
+    await this.waitForSelector({ selector: 'input#search' });
     return { success: true };
   }
   async solveCaptcha(pageContent: string) {
