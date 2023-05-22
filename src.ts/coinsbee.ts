@@ -1,6 +1,7 @@
 import { Solver } from "2captcha";
 import cheerio from "cheerio";
 import url, { URL } from "url";
+import { GuerrillaSession } from "./geurilla";
 import qs from "querystring";
 import { getLogger } from "./logger.js";
 import { BasePuppeteer } from "base-puppeteer";
@@ -8,34 +9,8 @@ import vm from "vm";
 import { ethers } from "ethers";
 import stringEntropy from "string-entropy";
 import crypto from "crypto";
-/*
-import makeFetchCookie from "fetch-cookie";
 
-const CookieJar = (makeFetchCookie as any).toughCookie.CookieJar;
-
-class GuerrillaSession {
-  public jar: any;
-  public ip: any;
-  public userAgent: any;
-  constructor() {
-    this.jar = new CookieJar();
-    this.ip = null;
-    this.userAgent = new UserAgent().toString();
-  }
-  async _fetch(method, config = {}) {
-    const fetchCookie = makeFetchCookie(fetch, this.jar);
-    config.headers = config.headers || {};
-    config.headers['user-agent'] = this.userAgent;
-    return await fetchCookie(method, config);
-  }
-  async checkIp() {
-    const { ip } = await (await fetch('https://api64.ipify.org/json', { method: 'GET' })).json();
-    this.ip = ip;
-    return ip;
-  }
-  async _call(methodName, data) {
-    return await this._fetch(url.format({ protocol: 'https:', hostname: 'api.guerrillamail.com', pathname: 'ajax.php', search: '?' + qs.stringify({ f: method, ip: this.ip, 
-																		  */
+																		 
 
 const DEFAULT_ENTROPY = 70;
 
@@ -535,6 +510,9 @@ export class CoinsbeeClient extends BasePuppeteer {
     return c;
   }
   async sharklasers() {
+    const geurillaSession = await new GuerrillaSession();
+    const email = await geurillaSession.createGuerillaMailAccount();
+    console.log(email);
     await this.signup({
       email: crypto.randomBytes(6).toString('hex') + '@grr.la',
       password: crypto.randomBytes(10).toString('base64'),
