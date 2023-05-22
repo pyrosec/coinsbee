@@ -1,6 +1,7 @@
 import makeFetchCookie from "fetch-cookie";
 import url, { URL } from "url";
 import qs from "querystring";
+import UserAgent from 'user-agents';
 
 const CookieJar = (makeFetchCookie as any).toughCookie.CookieJar;
 
