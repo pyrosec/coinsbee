@@ -25,7 +25,7 @@ export class GuerrillaSession {
   }
  
   async _call(methodName, data) {
-     return await this._fetch(url.format({ protocol: 'https:', hostname: 'api.guerrillamail.com', pathname: 'ajax.php', search: '?' + qs.stringify({ f: method, ip: this.ip, })}), { method: 'POST', body: qs.stringify(data) });
+     return await this._fetch(url.format({ protocol: 'https:', hostname: 'api.guerrillamail.com', pathname: 'ajax.php', search: '?' + qs.stringify({ f: methodName, ip: this.ip, })}), { method: 'POST', body: qs.stringify(data) });
   }
 
   async createGuerillaMailAccount() {
