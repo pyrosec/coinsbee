@@ -86,7 +86,7 @@ export declare class CoinsbeeClient extends BasePuppeteer {
     retrieveCodeFromUrl({ url, entropy }: {
         url: any;
         entropy: any;
-    }): Promise<string[]>;
+    }): Promise<any>;
     userOrdersDetails({ orderid, hash }: {
         orderid: any;
         hash: any;
