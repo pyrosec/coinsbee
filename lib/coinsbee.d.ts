@@ -80,6 +80,9 @@ export declare class CoinsbeeClient extends BasePuppeteer {
     poll({ entropy }: {
         entropy?: number;
     }): Promise<any>;
+    goto(o: any): Promise<{
+        success: boolean;
+    }>;
     retrieveCodeFromUrl({ url, entropy }: {
         url: any;
         entropy: any;

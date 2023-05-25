@@ -394,13 +394,17 @@ export class CoinsbeeClient extends BasePuppeteer {
       await this.timeout({ n: 1000 });
     }
   }
+  async goto(o) {
+    this.logger.info('GET|' + o.url);
+    return await super.goto(o);
+  }
   async retrieveCodeFromUrl({
     url,
     entropy
   }) {
-    const content = await (await this._call(url, {
-      method: "GET"
-    })).text();
+    await this.goto({ url });
+    await this.timeout({ n: 10000 });
+    const content = await this._page.content();
     const tokens = cheerio.load(content)('body').text().split(/[\s\n]+/).filter(Boolean)
     return tokens.filter((v) => /^[a-zA-Z0-9\-]+$/.test(v) && v.length < 32 && stringEntropy(v) > entropy);
   }
