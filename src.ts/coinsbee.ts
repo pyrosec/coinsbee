@@ -14,6 +14,12 @@ const DEFAULT_ENTROPY = 70;
 
 const solver = process.env.TWOCAPTCHA_API_KEY ? new Solver(process.env.TWOCAPTCHA_API_KEY) : null;
 
+const findMaxLengthString = (ary) => {
+  const maxLength = Math.max(...ary.map((v) => v.length));
+  return ary.find((v) => v.length === maxLength);
+};
+
+
 const serializeProducts = (list) => list.map((v) => v.href).join("|");
 
 interface ISavedAuthentication {
@@ -394,15 +400,19 @@ export class CoinsbeeClient extends BasePuppeteer {
       await this.timeout({ n: 1000 });
     }
   }
+  async goto(o) {
+    this.logger.info('GET|' + o.url);
+    return await super.goto(o);
+  }
   async retrieveCodeFromUrl({
     url,
     entropy
   }) {
-    const content = await (await this._call(url, {
-      method: "GET"
-    })).text();
+    await this.goto({ url });
+    await this.timeout({ n: 10000 });
+    const content = await this._page.content();
     const tokens = cheerio.load(content)('body').text().split(/[\s\n]+/).filter(Boolean)
-    return tokens.filter((v) => /^[a-zA-Z0-9\-]+$/.test(v) && v.length < 32 && stringEntropy(v) > entropy);
+    return tokens.filter((v) => /^[a-zA-Z0-9\-]+$/.test(v) && v.length < 32 && stringEntropy(v) > entropy).map((v) => findMaxLengthString(v.match(/[0-9A-Z]+/g) || ['']))[0];
   }
 
   async userOrdersDetails({
