@@ -156,9 +156,9 @@
     "@types/har-format" "*"
 
 "@types/debug@^4.1.0":
-  version "4.1.7"
-  resolved "https://registry.yarnpkg.com/@types/debug/-/debug-4.1.7.tgz#7cc0ea761509124709b8b2d1090d8f6c17aadb82"
-  integrity sha512-9AonUzyTjXXhEOa0DnqpzZi6VHlqKMswga9EXjpXnnqxwLtdvPPtlO8evrI5D9S6asFRCQ6v+wpiUKbw+vKqyg==
+  version "4.1.8"
+  resolved "https://registry.yarnpkg.com/@types/debug/-/debug-4.1.8.tgz#cef723a5d0a90990313faec2d1e22aee5eecb317"
+  integrity sha512-/vPO1EPOs306Cvhwv7KfVfYvOJqA/S/AXjaHQiJboCZzcNDb+TIJFN9/2C9DZ//ijSKWioNyUxD792QmDJ+HKQ==
   dependencies:
     "@types/ms" "*"
 
@@ -190,9 +190,9 @@
   integrity sha512-iiUgKzV9AuaEkZqkOLDIvlQiL6ltuZd9tGcW3gwpnX8JbuiuhFlEGmmFXEXkN50Cvq7Os88IY2v0dkDqXYWVgA==
 
 "@types/node@*":
-  version "20.2.3"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.2.3.tgz#b31eb300610c3835ac008d690de6f87e28f9b878"
-  integrity sha512-pg9d0yC4rVNWQzX8U7xb4olIOFuuVL9za3bzMT2pu2SU0SNEi66i2qrvhE2qt0HvkhuCaWJu7pLNOt/Pj8BIrw==
+  version "20.2.4"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.2.4.tgz#e6c3345f7ed9c6df41fdc288a94e2633167bc15d"
+  integrity sha512-ni5f8Xlf4PwnT/Z3f0HURc3ZSw8UyrqMqmM3L5ysa7VjHu8c3FOmIo1nKCcLrV/OAmtf3N4kFna/aJqxsfEtnA==
 
 "@types/node@18.15.13":
   version "18.15.13"
@@ -200,9 +200,9 @@
   integrity sha512-N+0kuo9KgrUQ1Sn/ifDXsvg0TTleP7rIy4zOBGECxAljqvqfqpTfzx0Q1NUedOixRMBfe2Whhb056a42cWs26Q==
 
 "@types/node@^18.16.3":
-  version "18.16.14"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.16.14.tgz#ab67bb907f1146afc6fedb9ce60ae8a99c989631"
-  integrity sha512-+ImzUB3mw2c5ISJUq0punjDilUQ5GnUim0ZRvchHIWJmOC0G+p0kzhXBqj6cDjK0QdPFwzrHWgrJp3RPvCG5qg==
+  version "18.16.15"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.16.15.tgz#cdc55df400109c2c1a80c98fc9cec4bd3f1097e2"
+  integrity sha512-fv9H0101Lom0m76x5UekmudO0Vu611ElbTCLOeSbyX5WM6sme3gJ10PHP83pA1/eXbZpnDoTkeY40jykH38ptQ==
 
 "@types/triple-beam@^1.3.2":
   version "1.3.2"
@@ -237,9 +237,9 @@ agent-base@6, agent-base@^6.0.2:
     debug "4"
 
 agent-base@^7.0.1:
-  version "7.0.2"
-  resolved "https://registry.yarnpkg.com/agent-base/-/agent-base-7.0.2.tgz#d6c854c21fe5b8c8f1c69ac12a7d21a3d1be2859"
-  integrity sha512-k2/tQ1+8Zf50dEUJWklUP80LcE/+Ph+OJ6cf2Ff2fD/c/TtCe6ofnCoNMz9UnyxOQYlaAALZtEWETzn+1JjfHg==
+  version "7.1.0"
+  resolved "https://registry.yarnpkg.com/agent-base/-/agent-base-7.1.0.tgz#536802b76bc0b34aa50195eb2442276d613e3434"
+  integrity sha512-o/zjMZRhJxny7OyEF+Op8X+efiELC7k7yOjMzgfzVqOzXqkBkWI79YoTdOtsuWd5BWhAGAuOY/Xa6xpiaWXiNg==
   dependencies:
     debug "^4.3.4"
 
@@ -336,7 +336,7 @@ balanced-match@^1.0.0:
 
 "base-puppeteer@https://github.com/pyrosec/base-puppeteer":
   version "0.1.0"
-  resolved "https://github.com/pyrosec/base-puppeteer#eabb2a0f612f8442adc6c898ac1aae6233da333b"
+  resolved "https://github.com/pyrosec/base-puppeteer#015ec9c1ac895b40c4e777d13c2212efc802351e"
   dependencies:
     "@faker-js/faker" "^7.6.0"
     axios "^1.3.6"
@@ -348,6 +348,7 @@ balanced-match@^1.0.0:
     mkdirp "^1.0.4"
     morgan "^1.10.0"
     prettier "^2.8.0"
+    proxies-fo "https://github.com/pyrosec/proxies-fo"
     proxy6 "https://github.com/pyrosec/proxy6"
     puppeteer "^19.10.1"
     puppeteer-extra "^3.3.6"
@@ -2004,6 +2005,15 @@ progress@2.0.3:
   resolved "https://registry.yarnpkg.com/progress/-/progress-2.0.3.tgz#7e8cf8d8f5b8f239c1bc68beb4eb78567d572ef8"
   integrity sha512-7PiHtLll5LdnKIMw100I+8xJXR5gW2QwWYkT6iJva0bXitZKa/XMrSbdmg3r2Xnaidz9Qumd0VPaMrZlF9V9sA==
 
+"proxies-fo@https://github.com/pyrosec/proxies-fo":
+  version "0.1.0"
+  resolved "https://github.com/pyrosec/proxies-fo#df3fff5afc7d196467a63f235bf67e4d1491c205"
+  dependencies:
+    change-case "^4.1.2"
+    node-fetch "2"
+    winston "^3.8.2"
+    yargs "^17.7.2"
+
 proxy-addr@~2.0.7:
   version "2.0.7"
   resolved "https://registry.yarnpkg.com/proxy-addr/-/proxy-addr-2.0.7.tgz#f19fe69ceab311eeb94b42e70e8c2070f9ba1025"
@@ -2721,9 +2731,9 @@ url-parse@^1.5.3:
     requires-port "^1.0.0"
 
 user-agents@^1.0.1211, user-agents@^1.0.1383, user-agents@^1.0.1387:
-  version "1.0.1387"
-  resolved "https://registry.yarnpkg.com/user-agents/-/user-agents-1.0.1387.tgz#bbcb5893473a52ae7ce579cfed4ccb6328000fb3"
-  integrity sha512-6eSxKlvJHx/svSnUhLBSM+KB5sdOYqK2hWpbBWao/RFRByNNBWx4Si4/ph6Ohlg/fsuF+16nn8FYqw7LOrBh/w==
+  version "1.0.1391"
+  resolved "https://registry.yarnpkg.com/user-agents/-/user-agents-1.0.1391.tgz#76e02acb9555a6530d9d3465d7338cb8f00e6769"
+  integrity sha512-O2QZmOvF5pLwX4COBJbCBNJJUrXFHV5RlzzbpRWpabW0IUUgTGVeheK5SYI1zdXkWukhyYWZjaK1UD7OYCM4tg==
   dependencies:
     dot-json "^1.3.0"
     lodash.clonedeep "^4.5.0"
@@ -2814,9 +2824,9 @@ winston-transport@^4.5.0:
     triple-beam "^1.3.0"
 
 winston@^3.8.2:
-  version "3.8.2"
-  resolved "https://registry.yarnpkg.com/winston/-/winston-3.8.2.tgz#56e16b34022eb4cff2638196d9646d7430fdad50"
-  integrity sha512-MsE1gRx1m5jdTTO9Ld/vND4krP2To+lgDoMEHGGa4HIlAUyXJtfc7CxQcGXVyz2IBpw5hbFkj2b/AtUdQwyRew==
+  version "3.9.0"
+  resolved "https://registry.yarnpkg.com/winston/-/winston-3.9.0.tgz#2bbdeb8167a75fac6d9a0c6d002890cd908016c2"
+  integrity sha512-jW51iW/X95BCW6MMtZWr2jKQBP4hV5bIDq9QrIjfDk6Q9QuxvTKEAlpUNAzP+HYHFFCeENhph16s0zEunu4uuQ==
   dependencies:
     "@colors/colors" "1.5.0"
     "@dabh/diagnostics" "^2.0.2"

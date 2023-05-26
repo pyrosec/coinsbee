@@ -491,12 +491,12 @@ export class CoinsbeeClient extends BasePuppeteer {
     await this.goto({ url: 'https://www.coinsbee.com/en/login' });
     await this.waitForSelector({ selector: 'input[type="email"]' });
     const text = await this._page.content();
-    await this.type({ selector: 'input[type="email"]', value: email });
-    await this.type({ selector: 'input[type="password"]', value: password });
+    await this.type({ selector: 'input[type="email"]', value: email, stealth: true });
+    await this.type({ selector: 'input[type="password"]', value: password, stealth: true });
     const c = await this.solveCaptcha(text);
-    await this.type({ selector: 'input[type="text"][name="c"]', value: c });
+    await this.type({ selector: 'input[type="text"][name="c"]', value: c, stealth: true });
     await this.click({ selector: 'button[type="submit"]' });
-    await this.waitForSelector({ selector: 'input#search' });
+    await this.timeout({ n: 5000 });
     return { success: true };
   }
   async solveCaptcha(pageContent: string) {
