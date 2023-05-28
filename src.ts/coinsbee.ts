@@ -95,6 +95,11 @@ export class CoinsbeeClient extends BasePuppeteer {
       method: 'GET'
     });
   }
+  async search({
+    search
+  }) {
+    return await this.getListingPage({ search } as any);
+  }
   async getListingPage({
     offset = 0,
     cat = "all",

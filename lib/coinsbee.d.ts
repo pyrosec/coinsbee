@@ -7,6 +7,9 @@ interface ISavedAuthentication {
 export declare class CoinsbeeClient extends BasePuppeteer {
     auth: null | ISavedAuthentication;
     shoppingCart(): Promise<any>;
+    search({ search }: {
+        search: any;
+    }): Promise<any[]>;
     getListingPage({ offset, cat, region, search, }: {
         offset?: number;
         cat?: string;
