@@ -30,10 +30,8 @@ export declare class CoinsbeeClient extends BasePuppeteer {
         currencies?: undefined;
         metadata?: undefined;
     }) & {
-        currencies: any[];
         products: any[];
         brandId: string;
-        metadata: any;
     };
     homepage(): Promise<void>;
     loadProduct({ name, search }: {
@@ -46,10 +44,8 @@ export declare class CoinsbeeClient extends BasePuppeteer {
         currencies?: undefined;
         metadata?: undefined;
     }) & {
-        currencies: any[];
         products: any[];
         brandId: string;
-        metadata: any;
     }>;
     _getWallet(): ethers.Wallet;
     checkBalance(): Promise<string>;

@@ -160,10 +160,8 @@ export class CoinsbeeClient extends BasePuppeteer {
       currencies,
       metadata
     } : {}, {
-      currencies,
       products,
-      brandId,
-      metadata,
+      brandId
     });
   }
   async homepage() {
