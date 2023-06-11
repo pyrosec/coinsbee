@@ -145,7 +145,7 @@ export class CoinsbeeClient extends BasePuppeteer {
   async _getHref({ name, search }) {
     this.logger.info("getting listings");
     const listings = await this.getProducts({ search });
-    return listings.find((v) => v.name === name).href;
+    return (listings.find((v) => v.name === name) || {}).href || null;
   }
   _getProductData({ text, extended }) {
     const $ = cheerio.load(text);
@@ -169,7 +169,9 @@ export class CoinsbeeClient extends BasePuppeteer {
   }
   async loadProduct({ name, search }) {
     search = search || name;
-    const response = await this._call(await this._getHref({ name, search }), {
+    const href = await this._getHref({ name, search });
+    if (!href) return null;
+    const response = await this._call(href, {
       method: "GET",
     });
     const text = await response.text();
