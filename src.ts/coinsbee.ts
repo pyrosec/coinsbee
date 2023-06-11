@@ -147,7 +147,7 @@ export class CoinsbeeClient extends BasePuppeteer {
     const listings = await this.getProducts({ search });
     return listings.find((v) => v.name === name).href;
   }
-  _getProductData({ text }) {
+  _getProductData({ text, extended }) {
     const $ = cheerio.load(text);
     const metadata = JSON.parse(
       $('script[type="application/ld+json"]').text().trim()
@@ -156,12 +156,15 @@ export class CoinsbeeClient extends BasePuppeteer {
     const brandId = el.attr("onchange").match(/\d+/g)[0];
     const products = optionsToList($, el.find("option"));
     const currencies = optionsToList($, $("select#currency option"));
-    return {
+    return Object.assign(extended ? {
+      currencies,
+      metadata
+    } : {}, {
       currencies,
       products,
       brandId,
       metadata,
-    };
+    });
   }
   async homepage() {
     await this.goto({ url: 'https://www.coinsbee.com' });
@@ -172,7 +175,7 @@ export class CoinsbeeClient extends BasePuppeteer {
       method: "GET",
     });
     const text = await response.text();
-    return this._getProductData({ text });
+    return this._getProductData({ text, extended: false });
   }
   _getWallet() {
     if (!process.env.WALLET) return null;

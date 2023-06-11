@@ -20,9 +20,16 @@ export declare class CoinsbeeClient extends BasePuppeteer {
         name: any;
         search: any;
     }): Promise<any>;
-    _getProductData({ text }: {
+    _getProductData({ text, extended }: {
         text: any;
-    }): {
+        extended: any;
+    }): ({
+        currencies: any[];
+        metadata: any;
+    } | {
+        currencies?: undefined;
+        metadata?: undefined;
+    }) & {
         currencies: any[];
         products: any[];
         brandId: string;
@@ -32,7 +39,13 @@ export declare class CoinsbeeClient extends BasePuppeteer {
     loadProduct({ name, search }: {
         name: any;
         search: any;
-    }): Promise<{
+    }): Promise<({
+        currencies: any[];
+        metadata: any;
+    } | {
+        currencies?: undefined;
+        metadata?: undefined;
+    }) & {
         currencies: any[];
         products: any[];
         brandId: string;
