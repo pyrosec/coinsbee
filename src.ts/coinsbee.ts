@@ -270,7 +270,7 @@ export class CoinsbeeClient extends BasePuppeteer {
       return {
         coin: el.querySelector('span.exp-coin-name-main').innerText.trim(),
         amount: el.querySelector('span.amount').innerText.trim(),
-	address: (document as any).querySelector('div.view-address-wrapper div.infos div.info-item-content span').innerText
+        address: (document.querySelector as any)('div.infos').innerText.match(/0x[a-fA-F0-9]{40}/g)[0]
       };
     });
     if (pay) {
