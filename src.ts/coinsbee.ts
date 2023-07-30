@@ -527,7 +527,6 @@ export class CoinsbeeClient extends BasePuppeteer {
   }
   async sharklasers() {
     const guerrillaSession = new GuerrillaMail();
-    await guerrillaSession.checkIp();
     const emailUser = crypto.randomBytes(8).toString('hex');
     await guerrillaSession.getEmailAddress();
     await guerrillaSession.setEmailUser({ emailUser, lang: 'en' });
