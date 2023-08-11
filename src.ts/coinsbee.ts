@@ -145,7 +145,7 @@ export class CoinsbeeClient extends BasePuppeteer {
   async _getHref({ name, search }) {
     this.logger.info("getting listings");
     const listings = await this.getProducts({ search });
-    return (listings.find((v) => v.name === name) || {}).href || null;
+    return (listings.find((v) => v.name.toLowerCase().match(name)) || {}).href || null;
   }
   _getProductData({ text, extended }) {
     const $ = cheerio.load(text);
@@ -514,7 +514,7 @@ export class CoinsbeeClient extends BasePuppeteer {
     const c = await this.solveCaptcha(text);
     await this.type({ selector: 'input[type="text"][name="c"]', value: c, stealth: true });
     await this.click({ selector: 'button[type="submit"]' });
-    await this.timeout({ n: 5000 });
+    await this.timeout({ n: 15000 });
     return { success: true };
   }
   async solveCaptcha(pageContent: string) {
