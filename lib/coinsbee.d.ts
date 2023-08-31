@@ -20,6 +20,10 @@ export declare class CoinsbeeClient extends BasePuppeteer {
         name: any;
         search: any;
     }): Promise<any>;
+    _matchHref({ name, search }: {
+        name: any;
+        search: any;
+    }): Promise<any>;
     _getProductData({ text, extended }: {
         text: any;
         extended: any;
@@ -34,6 +38,19 @@ export declare class CoinsbeeClient extends BasePuppeteer {
         brandId: string;
     };
     homepage(): Promise<void>;
+    matchProduct({ name, search }: {
+        name: any;
+        search: any;
+    }): Promise<({
+        currencies: any[];
+        metadata: any;
+    } | {
+        currencies?: undefined;
+        metadata?: undefined;
+    }) & {
+        products: any[];
+        brandId: string;
+    }>;
     loadProduct({ name, search }: {
         name: any;
         search: any;
@@ -50,6 +67,15 @@ export declare class CoinsbeeClient extends BasePuppeteer {
     _getWallet(): ethers.Wallet;
     checkBalance(): Promise<string>;
     buy({ name, value }: {
+        name: any;
+        value: any;
+    }): Promise<any>;
+    match({ name, value }: {
+        name: any;
+        value: any;
+    }): Promise<any>;
+    _buy({ products, name, value }: {
+        products: any;
         name: any;
         value: any;
     }): Promise<any>;

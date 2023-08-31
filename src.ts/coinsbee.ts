@@ -145,7 +145,12 @@ export class CoinsbeeClient extends BasePuppeteer {
   async _getHref({ name, search }) {
     this.logger.info("getting listings");
     const listings = await this.getProducts({ search });
-    return (listings.find((v) => v.name.toLowerCase().match(name)) || {}).href || null;
+    return (listings.find((v) => v.name === name).href) || null;
+  }
+  async _matchHref({ name, search }) {
+    this.logger.info("getting listings");
+    const listings = await this.getProducts({ search });
+    return (listings.find((v) => v.name.match(RegExp(name, 'i'))).href) || null;
   }
   _getProductData({ text, extended }) {
     const $ = cheerio.load(text);
@@ -166,6 +171,16 @@ export class CoinsbeeClient extends BasePuppeteer {
   }
   async homepage() {
     await this.goto({ url: 'https://www.coinsbee.com' });
+  }
+  async matchProduct({ name, search }) {
+    search = search || name;
+    const href = await this._matchHref({ name, search });
+    if (!href) return null;
+    const response = await this._call(href, {
+      method: "GET",
+    });
+    const text = await response.text();
+    return this._getProductData({ text, extended: false });
   }
   async loadProduct({ name, search }) {
     search = search || name;
@@ -190,6 +205,28 @@ export class CoinsbeeClient extends BasePuppeteer {
     value
   }) {
     const { products } = await this.loadProduct({ name, search: name });
+    return await this._buy({
+      products,
+      name,
+      value
+    });
+  }
+  async match({
+    name,
+    value
+  }) {
+    const { products } = await this.matchProduct({ name, search: name });
+    return await this._buy({
+      products,
+      name,
+      value
+    });
+  }
+  async _buy({
+    products,
+    name,
+    value
+  }) {
     const exact = products.find((v) => v.name.split(/\s+/).find((v) => !isNaN(v) && Number(v) === Number(value)));
     const id = exact && exact.value || products.find((v) => !v.name.split(/\s+/).find((v) => !isNaN(v))).value + '_' + String(Math.floor(Number(value)));
     this.logger.info('selecting product ' + id);
