@@ -551,6 +551,11 @@ export class CoinsbeeClient extends BasePuppeteer {
     await this.type({ selector: 'input[type="password"]', value: password, stealth: true });
     await this.type({ selector: 'input[type="text"][name="c"]', value: await c, stealth: true });
     await this.click({ selector: 'button[type="submit"]' });
+    await this.timeout({ n: 1000 });
+    if (await this._page.evaluate(() => Boolean((document as any).querySelector('div.alert.alert-danger')))) {
+      this.logger.info('captcha failed, retrying');
+      return await this.login({ email, password });
+    }
     await this.waitForSelector({ selector: 'input#search' });
     return { success: true };
   }
@@ -640,6 +645,20 @@ export class CoinsbeeClient extends BasePuppeteer {
     }, { email, password, firstname, lastname, street, postcode, city, country, birthday, c });
     await this.click({ selector: 'button[type="submit"]' });
     await this.timeout({ n: 1000 });
+    if (await this._page.evaluate(() => Boolean((document as any).querySelector('div.alert.alert-danger')))) {
+      this.logger.info('captcha failed, retrying');
+      return await this.signup({
+        email,
+        password,
+        firstname,
+        lastname,
+        street,
+        postcode,
+        city,
+        country,
+        birthday
+      });
+    }
     return { email, password };
   }
 }

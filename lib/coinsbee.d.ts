@@ -148,14 +148,9 @@ export declare class CoinsbeeClient extends BasePuppeteer {
     login({ email, password }: {
         email: any;
         password: any;
-    }): Promise<{
-        success: boolean;
-    }>;
+    }): any;
     solveCaptcha(pageContent: string): Promise<string>;
-    sharklasers(): Promise<{
-        email: any;
-        password: any;
-    }>;
+    sharklasers(): Promise<any>;
     signup({ email, password, firstname, lastname, street, postcode, city, country, birthday, }: {
         email: any;
         password: any;
@@ -166,9 +161,6 @@ export declare class CoinsbeeClient extends BasePuppeteer {
         city: any;
         country: any;
         birthday: any;
-    }): Promise<{
-        email: any;
-        password: any;
-    }>;
+    }): any;
 }
 export {};
