@@ -577,9 +577,9 @@ export class CoinsbeeClient extends BasePuppeteer {
     const auth = await this.signup({
       email: email,
       password: crypto.randomBytes(10).toString('base64'),
-      firstname: 'Al',
-      lastname: 'Paca',
-      street: '1 Tally Dr',
+      firstname: 'Sheep',
+      lastname: 'Herder',
+      street: '1 Beach Dr',
       postcode: '02879',
       city: 'Wakefield',
       country: 'US',
